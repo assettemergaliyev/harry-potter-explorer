@@ -1,0 +1,169 @@
+"use client";
+
+import { useEffect, useState } from "react";
+
+type Character = {
+  id: string;
+  name: string;
+  house: string;
+  patronus: string;
+  image: string;
+};
+
+type CharactersResponse = {
+  data: Character[];
+  pagination: {
+    page: number;
+    limit: number;
+    total: number;
+    totalPages: number;
+  };
+};
+
+export default function CharactersCatalog() {
+  const [characters, setCharacters] = useState<Character[]>([]);
+  const [search, setSearch] = useState("");
+  const [page, setPage] = useState(1);
+  const [pagination, setPagination] = useState({
+    page: 1,
+    limit: 12,
+    total: 0,
+    totalPages: 1,
+  });
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState("");
+
+  useEffect(() => {
+    async function loadCharacters() {
+      try {
+        setLoading(true);
+        setError("");
+
+        const response = await fetch(
+          `/api/characters?search=${encodeURIComponent(search)}&page=${page}&limit=12`
+        );
+
+        if (!response.ok) {
+          throw new Error("Не удалось загрузить персонажей");
+        }
+
+        const result: CharactersResponse = await response.json();
+
+        setCharacters(result.data);
+        setPagination(result.pagination);
+      } catch {
+        setError("Произошла ошибка при загрузке персонажей.");
+      } finally {
+        setLoading(false);
+      }
+    }
+
+    loadCharacters();
+  }, [search, page]);
+
+  function handleSearchChange(value: string) {
+    setSearch(value);
+    setPage(1);
+  }
+
+  return (
+    <div>
+      <div className="mt-8">
+        <input
+          type="text"
+          value={search}
+          onChange={(event) => handleSearchChange(event.target.value)}
+          placeholder="Поиск персонажа по имени..."
+          className="w-full rounded-xl border border-white/10 bg-slate-950 px-4 py-3 text-white outline-none placeholder:text-gray-500 focus:border-amber-300"
+        />
+      </div>
+
+      <p className="mt-4 text-sm text-gray-400">
+        Найдено персонажей: {pagination.total}
+      </p>
+
+      {loading && (
+        <p className="mt-10 text-gray-400">Загрузка персонажей...</p>
+      )}
+
+      {error && (
+        <p className="mt-10 text-red-400">{error}</p>
+      )}
+
+      {!loading && !error && characters.length === 0 && (
+        <p className="mt-10 text-gray-400">
+          Персонажи не найдены.
+        </p>
+      )}
+
+      {!loading && !error && characters.length > 0 && (
+        <>
+          <div className="mt-10 grid gap-6 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
+            {characters.map((character) => (
+              <article
+                key={character.id}
+                className="overflow-hidden rounded-2xl border border-white/10 bg-slate-950"
+              >
+                <div className="aspect-[3/4] bg-slate-900">
+                  {character.image ? (
+                    <img
+                      src={character.image}
+                      alt={character.name}
+                      className="h-full w-full object-cover"
+                    />
+                  ) : (
+                    <div className="flex h-full items-center justify-center px-4 text-center text-gray-600">
+                      Нет изображения
+                    </div>
+                  )}
+                </div>
+
+                <div className="p-5">
+                  <h2 className="text-xl font-semibold">
+                    {character.name}
+                  </h2>
+
+                  <p className="mt-3 text-sm text-gray-400">
+                    <span className="font-medium text-white">
+                      Факультет:
+                    </span>{" "}
+                    {character.house || "Не указан"}
+                  </p>
+
+                  <p className="mt-2 text-sm text-gray-400">
+                    <span className="font-medium text-white">
+                      Патронус:
+                    </span>{" "}
+                    {character.patronus || "Не указан"}
+                  </p>
+                </div>
+              </article>
+            ))}
+          </div>
+
+          <div className="mt-10 flex items-center justify-between gap-4">
+            <button
+              onClick={() => setPage((currentPage) => currentPage - 1)}
+              disabled={page <= 1}
+              className="rounded-xl border border-white/10 px-5 py-3 text-sm font-medium transition hover:bg-white/10 disabled:cursor-not-allowed disabled:opacity-40"
+            >
+              ← Назад
+            </button>
+
+            <p className="text-sm text-gray-400">
+              Страница {pagination.page} из {pagination.totalPages}
+            </p>
+
+            <button
+              onClick={() => setPage((currentPage) => currentPage + 1)}
+              disabled={page >= pagination.totalPages}
+              className="rounded-xl border border-white/10 px-5 py-3 text-sm font-medium transition hover:bg-white/10 disabled:cursor-not-allowed disabled:opacity-40"
+            >
+              Вперёд →
+            </button>
+          </div>
+        </>
+      )}
+    </div>
+  );
+}
