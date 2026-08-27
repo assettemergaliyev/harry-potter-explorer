@@ -23,6 +23,8 @@ type CharactersResponse = {
 export default function CharactersCatalog() {
   const [characters, setCharacters] = useState<Character[]>([]);
   const [search, setSearch] = useState("");
+  const [showFavoritesOnly, setShowFavoritesOnly] = useState(false);
+  const [favoriteIds, setFavoriteIds] = useState<string[]>([]);
   const [page, setPage] = useState(1);
   const [pagination, setPagination] = useState({
     page: 1,
@@ -66,6 +68,22 @@ export default function CharactersCatalog() {
     setPage(1);
   }
 
+  useEffect(() => {
+    const savedFavorites = localStorage.getItem("harry-potter-favorites");
+
+    if (!savedFavorites) {
+      return;
+    }
+
+    const favorites: string[] = JSON.parse(savedFavorites);
+
+    setFavoriteIds(favorites);
+  }, []);
+
+  const visibleCharacters = showFavoritesOnly
+  ? characters.filter((character) => favoriteIds.includes(character.id))
+  : characters;
+
   return (
     <div>
       <div className="mt-8">
@@ -77,6 +95,30 @@ export default function CharactersCatalog() {
           className="w-full rounded-xl border border-white/10 bg-slate-950 px-4 py-3 text-white outline-none placeholder:text-gray-500 focus:border-amber-300"
         />
       </div>
+
+    <div className="mt-4 flex gap-3">
+        <button
+            onClick={() => setShowFavoritesOnly(false)}
+            className={`rounded-xl px-4 py-2 text-sm font-medium transition ${
+            !showFavoritesOnly
+                ? "bg-amber-300 text-black"
+                : "border border-white/10 text-gray-300 hover:bg-white/10"
+            }`}
+        >
+            Все
+        </button>
+
+        <button
+            onClick={() => setShowFavoritesOnly(true)}
+            className={`rounded-xl px-4 py-2 text-sm font-medium transition ${
+            showFavoritesOnly
+                ? "bg-amber-300 text-black"
+                : "border border-white/10 text-gray-300 hover:bg-white/10"
+            }`}
+        >
+            Только избранные
+        </button>
+    </div>
 
       <p className="mt-4 text-sm text-gray-400">
         Найдено персонажей: {pagination.total}
@@ -90,16 +132,18 @@ export default function CharactersCatalog() {
         <p className="mt-10 text-red-400">{error}</p>
       )}
 
-      {!loading && !error && characters.length === 0 && (
+      {!loading && !error && visibleCharacters.length === 0 && (
         <p className="mt-10 text-gray-400">
-          Персонажи не найдены.
+        {showFavoritesOnly
+            ? "В избранном пока нет персонажей."
+            : "Персонажи не найдены."}
         </p>
       )}
 
-      {!loading && !error && characters.length > 0 && (
+      {!loading && !error && visibleCharacters.length > 0 && (
         <>
           <div className="mt-10 grid gap-6 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
-            {characters.map((character) => (
+            {visibleCharacters.map((character) => (
               <a
   key={character.id}
   href={`/characters/${character.id}`}

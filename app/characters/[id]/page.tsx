@@ -1,3 +1,5 @@
+import FavoriteButton from "./FavoriteButton";
+
 type Character = {
   id: string;
   name: string;
@@ -78,7 +80,9 @@ export default async function CharacterPage({
             <h1 className="mt-2 text-4xl font-bold md:text-5xl">
               {character.name}
             </h1>
-
+            
+            <FavoriteButton characterId={character.id} />
+            
             <div className="mt-8 grid gap-4 sm:grid-cols-2">
               <Detail label="Факультет" value={character.house} />
               <Detail label="Дата рождения" value={character.dateOfBirth} />
