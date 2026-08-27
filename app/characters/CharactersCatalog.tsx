@@ -100,10 +100,11 @@ export default function CharactersCatalog() {
         <>
           <div className="mt-10 grid gap-6 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
             {characters.map((character) => (
-              <article
-                key={character.id}
-                className="overflow-hidden rounded-2xl border border-white/10 bg-slate-950"
-              >
+              <a
+  key={character.id}
+  href={`/characters/${character.id}`}
+  className="block overflow-hidden rounded-2xl border border-white/10 bg-slate-950 transition hover:-translate-y-1"
+>
                 <div className="aspect-[3/4] bg-slate-900">
                   {character.image ? (
                     <img
@@ -137,7 +138,7 @@ export default function CharactersCatalog() {
                     {character.patronus || "Не указан"}
                   </p>
                 </div>
-              </article>
+              </a>
             ))}
           </div>
 
