@@ -1,3 +1,5 @@
+import CharacterChat from "./CharacterChat";
+
 import FavoriteButton from "./FavoriteButton";
 
 type Character = {
@@ -82,7 +84,7 @@ export default async function CharacterPage({
             </h1>
             
             <FavoriteButton characterId={character.id} />
-            
+
             <div className="mt-8 grid gap-4 sm:grid-cols-2">
               <Detail label="Факультет" value={character.house} />
               <Detail label="Дата рождения" value={character.dateOfBirth} />
@@ -118,6 +120,9 @@ export default async function CharacterPage({
                 </p>
               </div>
             </div>
+
+            <CharacterChat character={character} />
+
           </div>
         </div>
       </div>
